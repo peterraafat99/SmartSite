@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartSite — AI Construction Safety Platform</title>
+  
+  <!-- Tailwind CSS & Google Fonts -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0f9ff',
+              400: '#38bdf8',
+              500: '#0284c7',
+              600: '#0369a1',
+            },
+            surface: {
+              DEFAULT: '#0f172a',
+              card: '#131d31',
+              darker: '#080c14',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-surface-darker text-slate-100 flex flex-col h-screen overflow-hidden">
+
+  <!-- TOP HEADER BAR -->
+  <header class="h-14 border-b border-slate-800 bg-surface/90 backdrop-blur-md px-5 flex items-center justify-between shrink-0 z-30">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-500 to-sky-700 flex items-center justify-center font-bold text-lg shadow-lg shadow-sky-500/20">
+        🏗️
+      </div>
+      <div>
+        <div class="font-extrabold text-base tracking-tight flex items-center gap-2">
+          SmartSite
+          <span class="text-[10px] font-bold uppercase tracking-wider bg-sky-500/10 text-sky-400 border border-sky-500/30 px-1.5 py-0.5 rounded">Commercial v2.0</span>
+        </div>
+      </div>
+      <div class="h-4 w-px bg-slate-800 mx-2"></div>
+      <div class="flex items-center gap-2 text-xs text-slate-400">
+        <span class="pulse-dot"></span>
+        <span class="font-medium text-slate-300">Terminal A: Active Construction Zone</span>
+      </div>
+    </div>
+
+    <!-- Right Header Controls -->
+    <div class="flex items-center gap-4 text-xs">
+      <!-- System Telemetry Badges -->
+      <div class="hidden md:flex items-center gap-3 bg-slate-900/80 px-3 py-1.5 rounded-lg border border-slate-800 text-slate-400 font-medium">
+        <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> YOLO11n (12 Classes)</span>
+        <span class="text-slate-700">|</span>
+        <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-cyan-400"></span> ArcFace Biometrics</span>
+        <span class="text-slate-700">|</span>
+        <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-amber-400"></span> IoT Simulated</span>
+      </div>
+
+      <!-- Audio Alarm Toggle -->
+      <button id="btn-audio-toggle" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 transition">
+        <i data-lucide="volume-2" class="w-3.5 h-3.5 text-sky-400"></i>
+        <span id="audio-status-text">Audio Alert: ON</span>
+      </button>
+
+      <!-- Live Clock -->
+      <div id="live-clock" class="mono font-semibold text-slate-300 bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-800">
+        --:--:--
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN APP CONTAINER -->
+  <div class="flex flex-1 overflow-hidden">
+    
+    <!-- LEFT NAVIGATION RAIL -->
+    <aside class="w-64 border-r border-slate-800 bg-surface/50 backdrop-blur-md flex flex-col justify-between p-3 shrink-0">
+      <nav class="space-y-1">
+        <div class="px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+          Surveillance & Operations
+        </div>
+        
+        <button onclick="switchView('overview')" id="nav-overview" class="nav-tab active w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-slate-300 hover:bg-slate-800/60 transition">
+          <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+          Operations Command
+        </button>
+        
+        <button onclick="switchView('camera')" id="nav-camera" class="nav-tab w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-slate-300 hover:bg-slate-800/60 transition">
+          <i data-lucide="video" class="w-4 h-4"></i>
+          AI Vision & Danger Zones
+        </button>
+
+        <button onclick="switchView('access')" id="nav-access" class="nav-tab w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-slate-300 hover:bg-slate-800/60 transition">
+          <i data-lucide="shield-check" class="w-4 h-4"></i>
+          Access Control & Face Gate
+        </button>
+
+        <button onclick="switchView('iot')" id="nav-iot" class="nav-tab w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-slate-300 hover:bg-slate-800/60 transition">
+          <i data-lucide="activity" class="w-4 h-4"></i>
+          IoT Environmental Sensors
+        </button>
+
+        <div class="pt-4 px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+          Safety Intelligence & Audit
+        </div>
+
+        <button onclick="switchView('incidents')" id="nav-incidents" class="nav-tab w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-slate-300 hover:bg-slate-800/60 transition">
+          <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+          Safety Incidents & Audit
+          <span id="badge-open-incidents" class="ml-auto bg-amber-500/20 text-amber-400 text-xs px-2 py-0.5 rounded-full font-bold">0</span>
+        </button>
+
+        <button onclick="switchView('regulations')" id="nav-regulations" class="nav-tab w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-slate-300 hover:bg-slate-800/60 transition">
+          <i data-lucide="book-open" class="w-4 h-4"></i>
+          OSHA Standards & Guide
+        </button>
+      </nav>
+
+      <!-- Sidebar Bottom System Info -->
+      <div class="bg-slate-900/60 border border-slate-800/80 rounded-lg p-3 text-xs text-slate-400 space-y-2">
+        <div class="flex items-center justify-between">
+          <span>Database Engine</span>
+          <span class="text-emerald-400 font-semibold">SQLite Connected</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span>Inference Speed</span>
+          <span class="text-sky-400 mono font-semibold">~28 ms / frame</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span>Active Connections</span>
+          <span id="ws-client-status" class="text-emerald-400 font-semibold">Live (WebSocket)</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- CONTENT VIEW AREA -->
+    <main class="flex-1 overflow-y-auto p-6 bg-surface-darker relative" id="main-content">
+      
+      <!-- VIEW 1: OPERATIONS COMMAND CENTER -->
+      <section id="view-overview" class="space-y-6">
+        <!-- Banner -->
+        <div class="relative overflow-hidden flex items-center justify-between bg-gradient-to-r from-[#0d1a35] via-[#0a1628] to-[#07101e] border border-sky-900/40 rounded-2xl p-6 shadow-2xl">
+          <!-- Animated grid lines bg -->
+          <div class="absolute inset-0 opacity-10" style="background-image: linear-gradient(rgba(56,189,248,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(56,189,248,0.3) 1px, transparent 1px); background-size: 32px 32px;"></div>
+          <div class="relative z-10">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="pulse-dot"></span>
+              <span class="text-xs font-bold text-sky-400 uppercase tracking-widest">Live Monitoring Active</span>
+            </div>
+            <h1 class="text-2xl font-black text-slate-100 tracking-tight">Operations Safety Command Center</h1>
+            <p class="text-sm text-slate-400 mt-1">Real-time edge computer vision · ArcFace biometric gate · IoT atmospheric intelligence</p>
+          </div>
+          <div class="relative z-10 flex items-center gap-3">
+            <div class="text-right hidden md:block">
+              <div class="text-xs text-slate-500 uppercase tracking-wider">Site</div>
+              <div class="font-bold text-sm text-slate-200">Terminal A — Active Zone</div>
+            </div>
+            <button onclick="refreshDashboard()" class="px-4 py-2 rounded-xl bg-sky-600/20 hover:bg-sky-600/40 text-sky-300 text-xs font-bold border border-sky-500/40 flex items-center gap-2 transition shadow-lg shadow-sky-900/30">
+              <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Sync Telemetry
+            </button>
+          </div>
+        </div>
+
+        <!-- 5 Industrial KPI Cards -->
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+          <div class="kpi-tile group">
+            <div class="flex items-center justify-between mb-3">
+              <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Workers On Site</div>
+              <div class="w-8 h-8 rounded-lg bg-sky-500/10 border border-sky-500/20 flex items-center justify-center">
+                <i data-lucide="users" class="w-4 h-4 text-sky-400"></i>
+              </div>
+            </div>
+            <div id="kpi-workers" class="text-4xl font-black mono text-sky-400">--</div>
+            <div class="text-xs text-slate-500 mt-2 flex items-center gap-1.5">
+              <span id="kpi-biometric-workers" class="text-emerald-400 font-bold">--</span> Biometric Verified
+            </div>
+            <div class="mt-2 h-1 rounded-full bg-slate-800 overflow-hidden">
+              <div class="h-full bg-gradient-to-r from-sky-600 to-sky-400 rounded-full" style="width: 72%"></div>
+            </div>
+          </div>
+
+          <div class="kpi-tile group">
+            <div class="flex items-center justify-between mb-3">
+              <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400">PPE Compliance</div>
+              <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+                <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
+              </div>
+            </div>
+            <div id="kpi-compliance" class="text-4xl font-black mono text-emerald-400">--%</div>
+            <div class="text-xs text-slate-500 mt-2">Head & High-Vis Coverage</div>
+            <div class="mt-2 h-1 rounded-full bg-slate-800 overflow-hidden">
+              <div class="h-full bg-gradient-to-r from-emerald-600 to-emerald-400 rounded-full" id="kpi-compliance-bar" style="width: 0%"></div>
+            </div>
+          </div>
+
+          <div class="kpi-tile group">
+            <div class="flex items-center justify-between mb-3">
+              <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Active Incidents</div>
+              <div class="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
+                <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-400"></i>
+              </div>
+            </div>
+            <div id="kpi-open-incidents" class="text-4xl font-black mono text-amber-400">--</div>
+            <div class="text-xs text-slate-500 mt-2">Awaiting EHS Resolution</div>
+            <div class="mt-2 h-1 rounded-full bg-slate-800 overflow-hidden">
+              <div class="h-full bg-gradient-to-r from-amber-600 to-amber-400 rounded-full" style="width: 40%"></div>
+            </div>
+          </div>
+
+          <div class="kpi-tile group">
+            <div class="flex items-center justify-between mb-3">
+              <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Critical Alarms</div>
+              <div class="w-8 h-8 rounded-lg bg-rose-500/10 border border-rose-500/20 flex items-center justify-center">
+                <i data-lucide="siren" class="w-4 h-4 text-rose-400"></i>
+              </div>
+            </div>
+            <div id="kpi-critical" class="text-4xl font-black mono text-rose-500">--</div>
+            <div class="text-xs text-slate-500 mt-2">Immediate Action Required</div>
+            <div class="mt-2 h-1 rounded-full bg-slate-800 overflow-hidden">
+              <div class="h-full bg-gradient-to-r from-rose-700 to-rose-500 rounded-full" style="width: 15%"></div>
+            </div>
+          </div>
+
+          <div class="kpi-tile group">
+            <div class="flex items-center justify-between mb-3">
+              <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Environmental</div>
+              <div class="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
+                <i data-lucide="wind" class="w-4 h-4 text-cyan-400"></i>
+              </div>
+            </div>
+            <div id="kpi-env-status" class="text-3xl font-black mono text-emerald-400">NORMAL</div>
+            <div class="text-xs text-slate-500 mt-2">IoT Atmospheric Gateway</div>
+            <div class="mt-2 h-1 rounded-full bg-slate-800 overflow-hidden">
+              <div class="h-full bg-gradient-to-r from-cyan-600 to-emerald-400 rounded-full" style="width: 85%"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- AI Risk Summary + Charts Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+          <!-- Live AI Risk Summary Panel -->
+          <div class="glass-panel p-5 space-y-4">
+            <div class="flex items-center justify-between">
+              <h3 class="font-bold text-sm text-slate-200 flex items-center gap-2">
+                <i data-lucide="activity" class="w-4 h-4 text-rose-400"></i>
+                AI Safety Risk Gauge
+              </h3>
+              <span class="badge-pill badge-low text-[10px]">Live</span>
+            </div>
+            <!-- Risk Dial -->
+            <div class="flex flex-col items-center py-2">
+              <div class="relative w-36 h-36">
+                <svg viewBox="0 0 120 120" class="w-full h-full -rotate-90">
+                  <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(30,41,59,0.8)" stroke-width="12"/>
+                  <circle cx="60" cy="60" r="50" fill="none" stroke="url(#riskGrad)" stroke-width="12"
+                    stroke-dasharray="314" id="risk-gauge-arc" stroke-dashoffset="220" stroke-linecap="round"/>
+                  <defs>
+                    <linearGradient id="riskGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stop-color="#10b981"/>
+                      <stop offset="50%" stop-color="#f59e0b"/>
+                      <stop offset="100%" stop-color="#ef4444"/>
+                    </linearGradient>
+                  </defs>
+                </svg>
+                <div class="absolute inset-0 flex flex-col items-center justify-center">
+                  <span id="risk-gauge-pct" class="text-2xl font-black mono text-slate-100">--</span>
+                  <span class="text-[10px] text-slate-400 uppercase tracking-wider">Risk</span>
+                </div>
+              </div>
+              <div id="risk-gauge-label" class="mt-2 badge-pill badge-resolved text-[10px]">SYSTEM READY</div>
+            </div>
+            <!-- Risk Breakdown Bars -->
+            <div class="space-y-2 text-xs">
+              <div class="flex items-center justify-between">
+                <span class="text-slate-400">PPE Non-Compliance</span>
+                <span id="risk-ppe-pct" class="mono font-bold text-rose-400">--</span>
+              </div>
+              <div class="h-1.5 rounded bg-slate-800 overflow-hidden">
+                <div class="h-full bg-rose-500 rounded transition-all" id="risk-ppe-bar" style="width:0%"></div>
+              </div>
+              <div class="flex items-center justify-between mt-1">
+                <span class="text-slate-400">Zone Intrusion Events</span>
+                <span id="risk-zone-pct" class="mono font-bold text-amber-400">--</span>
+              </div>
+              <div class="h-1.5 rounded bg-slate-800 overflow-hidden">
+                <div class="h-full bg-amber-500 rounded transition-all" id="risk-zone-bar" style="width:0%"></div>
+              </div>
+              <div class="flex items-center justify-between mt-1">
+                <span class="text-slate-400">Environmental Hazard</span>
+                <span id="risk-env-pct" class="mono font-bold text-cyan-400">--</span>
+              </div>
+              <div class="h-1.5 rounded bg-slate-800 overflow-hidden">
+                <div class="h-full bg-cyan-500 rounded transition-all" id="risk-env-bar" style="width:0%"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Donut: Hazard Breakdown -->
+          <div class="glass-panel p-5">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-bold text-sm text-slate-200 flex items-center gap-2">
+                <i data-lucide="pie-chart" class="w-4 h-4 text-sky-400"></i>
+                Incident Category Breakdown
+              </h3>
+            </div>
+            <div class="h-64 flex items-center justify-center">
+              <canvas id="chart-hazard-categories"></canvas>
+            </div>
+          </div>
+
+          <!-- Line: Environmental History -->
+          <div class="glass-panel p-5">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-bold text-sm text-slate-200 flex items-center gap-2">
+                <i data-lucide="trending-up" class="w-4 h-4 text-emerald-400"></i>
+                Environmental Sensor Trends
+              </h3>
+            </div>
+            <div class="h-64">
+              <canvas id="chart-sensor-history"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Incidents Table -->
+        <div class="glass-panel p-5">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-bold text-sm text-slate-200 flex items-center gap-2">
+              <i data-lucide="alert-circle" class="w-4 h-4 text-rose-400"></i>
+              Recent Safety Events & Incidents Feed
+            </h3>
+            <button onclick="switchView('incidents')" class="text-xs text-sky-400 hover:text-sky-300 font-semibold flex items-center gap-1 transition">
+              View All Records <i data-lucide="arrow-right" class="w-3 h-3"></i>
+            </button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs text-slate-300">
+              <thead class="text-slate-400 bg-slate-900/70 border-b border-slate-800 uppercase tracking-wider">
+                <tr>
+                  <th class="py-2.5 px-4 font-semibold">Incident ID</th>
+                  <th class="py-2.5 px-4 font-semibold">Time</th>
+                  <th class="py-2.5 px-4 font-semibold">Hazard Category</th>
+                  <th class="py-2.5 px-4 font-semibold">Priority</th>
+                  <th class="py-2.5 px-4 font-semibold">Location Zone</th>
+                  <th class="py-2.5 px-4 font-semibold">Status</th>
+                  <th class="py-2.5 px-4 font-semibold">OSHA Citation</th>
+                </tr>
+              </thead>
+              <tbody id="overview-incidents-body" class="divide-y divide-slate-800">
+                <tr><td colspan="7" class="py-6 text-center text-slate-500">Loading incident telemetry...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 2: AI VISION & DANGEROUS-ZONE ASSESSMENT STATION (IMAGE-DRIVEN) -->
+      <section id="view-camera" class="space-y-6 hidden">
+        <!-- Top Title Bar -->
+        <div class="glass-panel-elevated p-5 flex flex-wrap items-center justify-between gap-4">
+          <div class="flex items-center gap-4">
+            <button onclick="switchView('overview')" class="flex items-center gap-1.5 text-xs text-sky-400 hover:text-sky-300 font-semibold transition bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/30 px-3 py-1.5 rounded-lg shrink-0">
+              <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Back
+            </button>
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-sky-500/10 text-sky-400 border border-sky-500/30">
+                  Single Image Inspection
+                </span>
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                  YOLO11n Optical Engine
+                </span>
+              </div>
+              <h2 class="text-xl font-black text-slate-100 tracking-tight mt-1 flex items-center gap-2">
+                <i data-lucide="scan-line" class="w-5 h-5 text-sky-400"></i>
+                AI Vision & Safety Assessment Station
+              </h2>
+              <p class="text-xs text-slate-400 mt-0.5">
+                Submit construction photos to detect personnel, audit mandatory PPE compliance (hardhats, vests), and evaluate virtual restricted perimeter safety.
+              </p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <div class="bg-slate-900/90 border border-slate-700/80 rounded-xl px-3 py-1.5 text-xs flex items-center gap-2">
+              <span class="text-slate-400 font-medium">Confidence:</span>
+              <input type="range" id="dataset-image-conf" min="10" max="80" value="25" oninput="document.getElementById('dataset-conf-val').textContent = this.value + '%'" class="w-20 accent-sky-500">
+              <span id="dataset-conf-val" class="mono font-bold text-sky-400 w-8">25%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Main Single Image Inspection Workspace -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          
+          <!-- LEFT COLUMN: Image Input & Danger Zone Config (5 cols) -->
+          <div class="lg:col-span-5 space-y-4">
+            
+            <!-- SECTION 1: Direct Image Submission -->
+            <div class="glass-panel p-5 space-y-4">
+              <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-200 flex items-center gap-2">
+                  <i data-lucide="upload-cloud" class="w-4 h-4 text-sky-400"></i> 1. Submit Site Photo
+                </span>
+                <span class="text-[10px] font-semibold text-slate-400 bg-slate-900 px-2 py-0.5 rounded border border-slate-800">JPG, PNG, WebP</span>
+              </div>
+
+              <!-- Hidden Native File Input -->
+              <input type="file" id="direct-image-upload" accept="image/jpeg,image/png,image/webp,image/jpg" class="hidden" onchange="onDirectFileSelected(this.files)">
+
+              <!-- Primary Dropzone Card -->
+              <div id="dropzone-area" onclick="triggerFileInput()" class="dropzone-container rounded-xl p-5 text-center cursor-pointer transition border-2 border-dashed">
+                <div class="w-11 h-11 rounded-full bg-sky-500/10 border border-sky-500/20 flex items-center justify-center mx-auto mb-2 text-sky-400">
+                  <i data-lucide="upload-cloud" class="w-6 h-6"></i>
+                </div>
+                <div class="text-xs font-bold text-slate-200">Click to Choose Photo or Drag & Drop Here</div>
+                <div class="text-[11px] text-slate-400 mt-1">Upload any local site image from your computer</div>
+                <div class="mt-3">
+                  <button type="button" onclick="event.stopPropagation(); triggerFileInput();" class="px-3.5 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold inline-flex items-center gap-1.5 shadow-md shadow-sky-600/30 transition">
+                    <i data-lucide="folder-open" class="w-3.5 h-3.5"></i> Browse Photo File
+                  </button>
+                </div>
+              </div>
+
+              <!-- Selected File Pill -->
+              <div id="uploaded-file-badge" class="hidden items-center justify-between p-3 rounded-xl bg-sky-950/40 border border-sky-500/30 text-xs shadow-md">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <img id="upload-thumb-preview" src="" alt="Thumbnail" class="w-10 h-10 rounded-lg object-cover border border-sky-500/40 bg-slate-950 shrink-0">
+                  <div class="min-w-0">
+                    <div class="text-sky-200 font-bold text-xs truncate" id="uploaded-filename-text">image.jpg</div>
+                    <div class="text-[10px] text-emerald-400 flex items-center gap-1">
+                      <i data-lucide="check-circle" class="w-3 h-3"></i> Ready for inspection
+                    </div>
+                  </div>
+                </div>
+                <button type="button" onclick="clearDirectImage(event)" class="text-slate-400 hover:text-rose-400 text-xs px-2 py-1 rounded transition" title="Clear photo">✕ Clear</button>
+              </div>
+
+              <!-- Or Pick from Real Dataset Dropdown -->
+              <div class="pt-3 border-t border-slate-800 space-y-1.5">
+                <label class="text-[11px] font-semibold text-slate-400 flex items-center gap-1.5">
+                  <i data-lucide="images" class="w-3.5 h-3.5 text-slate-500"></i> Or Select Real Construction-PPE Dataset Photo:
+                </label>
+                <select id="select-dataset-sample" onchange="onDatasetDropdownChange(this.value)" class="w-full bg-slate-900 border border-slate-700 text-xs rounded-lg px-3 py-2 text-slate-200 focus:border-sky-500 focus:outline-none">
+                  <option value="">-- Choose a real scene from dataset --</option>
+                  <option value="source-32b77e88696e2ba988310ec62da94f16.jpg">Excavation Pit & Heavy Machinery (Real Photo)</option>
+                  <option value="source-cc3e6e8b453515c1824fa91042214b71.jpg">Scaffolding & Structural Framework (Real Photo)</option>
+                  <option value="source-4c8b02d254dd8190897f4ce0e54ef9f7.jpg">Material Staging & Ground Crew (Real Photo)</option>
+                  <option value="source-ba3aa5d1715142e5e962c3376ceca1a6.jpg">Overhead Crane & Steel Assembly (Real Photo)</option>
+                  <option value="source-012007571544d108ad62099e53b8a827.jpg">High-Density Workforce Deployment (Real Photo)</option>
+                  <option value="source-f4532be7ff670b1a99ec14fdae4b0557.jpg">Perimeter Gate Access Corridor (Real Photo)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- SECTION 2: Virtual Danger Zone (Optional Geofence) -->
+            <div class="glass-panel p-5 space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-200 flex items-center gap-1.5">
+                  <i data-lucide="shield-alert" class="w-4 h-4 text-amber-400"></i> 2. Virtual Danger Zone (ROI)
+                </span>
+                <label class="flex items-center gap-2 cursor-pointer text-xs">
+                  <input type="checkbox" id="toggle-danger-zone" checked onchange="onToggleDangerZone(this.checked)" class="accent-sky-500 w-4 h-4 rounded">
+                  <span id="label-danger-zone-enabled" class="text-amber-400 font-bold text-[11px]">Enabled</span>
+                </label>
+              </div>
+              <p class="text-[10px] text-slate-400 leading-relaxed">
+                Virtual safety geofence defined by safety supervisors to flag restricted area intrusions.
+                <span class="text-slate-300 font-medium">This is a custom safety rule, not from the dataset. Uncheck to disable.</span>
+              </p>
+
+              <div id="danger-zone-controls" class="space-y-3 pt-1">
+                <!-- Zone Presets -->
+                <div class="flex flex-wrap items-center gap-1.5 text-xs">
+                  <span class="text-[10px] text-slate-500 mr-1">Presets:</span>
+                  <button type="button" onclick="applyZonePreset('pit')" class="px-2.5 py-1 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-medium transition">Excavation Pit</button>
+                  <button type="button" onclick="applyZonePreset('crane')" class="px-2.5 py-1 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-medium transition">Crane Swing</button>
+                  <button type="button" onclick="applyZonePreset('scaffold')" class="px-2.5 py-1 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-medium transition">Scaffold Drop</button>
+                  <button type="button" onclick="applyZonePreset('staging')" class="px-2.5 py-1 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-medium transition">Material Staging</button>
+                </div>
+
+                <!-- Coordinates Sliders -->
+                <div class="grid grid-cols-2 gap-3 text-xs pt-1">
+                  <div>
+                    <div class="flex justify-between text-slate-400 text-[11px] mb-1">
+                      <span>Left (X1):</span>
+                      <span id="val-zone-x1" class="text-sky-400 mono font-bold">55%</span>
+                    </div>
+                    <input type="range" id="input-zone-x1" min="0" max="100" value="55" oninput="updateZoneSliders()" class="w-full accent-sky-500">
+                  </div>
+                  <div>
+                    <div class="flex justify-between text-slate-400 text-[11px] mb-1">
+                      <span>Top (Y1):</span>
+                      <span id="val-zone-y1" class="text-sky-400 mono font-bold">35%</span>
+                    </div>
+                    <input type="range" id="input-zone-y1" min="0" max="100" value="35" oninput="updateZoneSliders()" class="w-full accent-sky-500">
+                  </div>
+                  <div>
+                    <div class="flex justify-between text-slate-400 text-[11px] mb-1">
+                      <span>Right (X2):</span>
+                      <span id="val-zone-x2" class="text-sky-400 mono font-bold">95%</span>
+                    </div>
+                    <input type="range" id="input-zone-x2" min="0" max="100" value="95" oninput="updateZoneSliders()" class="w-full accent-sky-500">
+                  </div>
+                  <div>
+                    <div class="flex justify-between text-slate-400 text-[11px] mb-1">
+                      <span>Bottom (Y2):</span>
+                      <span id="val-zone-y2" class="text-sky-400 mono font-bold">90%</span>
+                    </div>
+                    <input type="range" id="input-zone-y2" min="0" max="100" value="90" oninput="updateZoneSliders()" class="w-full accent-sky-500">
+                  </div>
+                </div>
+                <div class="text-[11px] text-amber-400/90 font-mono text-right" id="active-zone-label">Pit B Excavation Area</div>
+              </div>
+            </div>
+
+            <!-- Main Execute Button -->
+            <button onclick="runVisionZoneInspection()" id="btn-run-inspection" class="btn-glow-sky w-full py-3.5 rounded-xl font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg">
+              <i data-lucide="scan" class="w-4 h-4"></i> Run AI Safety & PPE Inspection
+            </button>
+
+            <!-- Inspection Telemetry Cards Grid -->
+            <div id="image-inspection-summary" class="grid grid-cols-2 gap-3">
+              <div class="glass-panel p-3.5">
+                <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Workers Observed</div>
+                <div id="img-worker-count" class="text-2xl font-black mono text-sky-400 mt-1">--</div>
+                <div class="text-[10px] text-slate-500 mt-0.5">Tracked Optical Persons</div>
+              </div>
+
+              <div class="glass-panel p-3.5">
+                <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Zone Intrusion</div>
+                <div id="img-zone-breach-count" class="text-2xl font-black mono text-emerald-400 mt-1">--</div>
+                <div class="text-[10px] text-slate-500 mt-0.5">Foot Ground Contact</div>
+              </div>
+
+              <div class="glass-panel p-3.5">
+                <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">PPE Compliance</div>
+                <div id="img-compliance-rate" class="text-2xl font-black mono text-emerald-400 mt-1">--%</div>
+                <div class="text-[10px] text-slate-500 mt-0.5">Mandatory Head & Vest</div>
+              </div>
+
+              <div class="glass-panel p-3.5">
+                <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">PPE Violations</div>
+                <div id="img-violations-count" class="text-2xl font-black mono text-amber-400 mt-1">--</div>
+                <div class="text-[10px] text-slate-500 mt-0.5">Missing Required Gear</div>
+              </div>
+            </div>
+
+            <!-- Detected PPE Objects Pill List -->
+            <div class="glass-panel p-3.5 space-y-1.5">
+              <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Detected Object Signatures</div>
+              <div id="img-detections-list" class="flex flex-wrap gap-1 max-h-24 overflow-y-auto pt-1">
+                <span class="text-slate-500 text-xs">Run analysis to view object bounding classes.</span>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- RIGHT COLUMN: Inspection Display & Detailed Worker Telemetry (7 cols) -->
+          <div class="lg:col-span-7 space-y-4">
+            
+            <!-- Zone Breach Alert Banner (Dynamic) -->
+            <div id="zone-inspection-banner" class="hidden rounded-xl p-4 border backdrop-blur-md transition-all">
+              <!-- Dynamically populated -->
+            </div>
+
+            <!-- Annotated Image Display Stage -->
+            <div class="glass-panel p-3 flex flex-col justify-between">
+              <div class="flex items-center justify-between px-2 py-1 mb-2 text-xs">
+                <span class="font-bold text-slate-300 flex items-center gap-1.5">
+                  <i data-lucide="crosshair" class="w-4 h-4 text-sky-400"></i> AI Inspection Canvas
+                </span>
+                <div class="flex items-center gap-2">
+                  <span id="canvas-badge-status" class="badge-pill badge-resolved text-[10px]">Ready</span>
+                  <button onclick="toggleCanvasFullscreen()" class="text-slate-400 hover:text-slate-200 text-xs p-1" title="Toggle Fullscreen">
+                    <i data-lucide="maximize" class="w-3.5 h-3.5"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div id="inspection-canvas-container" class="relative rounded-xl overflow-hidden bg-slate-950 flex items-center justify-center min-h-[460px] border border-slate-800 shadow-2xl">
+                <img id="dataset-image-display" src="" alt="AI Inspection Result" class="max-h-[520px] w-full object-contain hidden transition-opacity duration-300">
+                
+                <!-- Empty Placeholder -->
+                <div id="dataset-img-placeholder" class="text-center text-slate-500 text-xs p-8 space-y-2">
+                  <div class="w-16 h-16 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center mx-auto mb-3 text-sky-400/60">
+                    <i data-lucide="scan-eye" class="w-8 h-8"></i>
+                  </div>
+                  <div class="font-bold text-sm text-slate-300">No Image Analyzed Yet</div>
+                  <p class="max-w-sm text-slate-400 text-xs mx-auto">
+                    Choose an authentic construction scene from the library on the left or upload your custom site photo, then click <strong>"Run AI Vision & Danger Zone Analysis"</strong>.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Detailed Worker-by-Worker Audit Table -->
+            <div class="glass-panel p-4 space-y-3">
+              <div class="flex items-center justify-between">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+                  <i data-lucide="clipboard-list" class="w-4 h-4 text-sky-400"></i> Worker Position & Danger Zone Telemetry
+                </h3>
+                <span id="telemetry-workers-count-badge" class="badge-pill badge-low text-[10px]">0 Workers</span>
+              </div>
+
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                  <thead class="text-slate-400 bg-slate-900/80 border-b border-slate-800 uppercase tracking-wider text-[10px]">
+                    <tr>
+                      <th class="py-2 px-3 font-semibold">Worker ID</th>
+                      <th class="py-2 px-3 font-semibold">Ground Contact</th>
+                      <th class="py-2 px-3 font-semibold">Danger Zone Status</th>
+                      <th class="py-2 px-3 font-semibold">Helmet</th>
+                      <th class="py-2 px-3 font-semibold">High-Vis Vest</th>
+                      <th class="py-2 px-3 font-semibold">Risk Level</th>
+                    </tr>
+                  </thead>
+                  <tbody id="workers-telemetry-body" class="divide-y divide-slate-800/80">
+                    <tr><td colspan="6" class="py-6 text-center text-slate-500 text-xs">Run inspection to view individual worker coordinates and safety statuses.</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+
+      <!-- VIEW 3: BIOMETRIC ACCESS CONTROL & FACE GATE -->
+      <section id="view-access" class="space-y-6 hidden">
+        <div class="flex items-center justify-between bg-surface-card border border-slate-800 rounded-xl p-4">
+          <div class="flex items-center gap-4">
+            <button onclick="switchView('overview')" class="flex items-center gap-1.5 text-xs text-sky-400 hover:text-sky-300 font-semibold transition bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/30 px-3 py-1.5 rounded-lg shrink-0">
+              <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Back
+            </button>
+            <div>
+              <h2 class="text-xl font-black text-slate-100">Site Access Control & Facial Recognition Turnstile</h2>
+              <p class="text-xs text-slate-400">InsightFace ArcFace 512-d embeddings + RetinaFace face detector. Dynamic worker registration and biometric matching.</p>
+            </div>
+          </div>
+          <span class="badge-pill badge-resolved">ArcFace 512-d Biometrics</span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Gate Scanner Stage -->
+          <div class="glass-panel p-5 lg:col-span-2 space-y-4">
+            <div class="flex items-center justify-between">
+              <h3 class="font-bold text-sm text-slate-200 flex items-center gap-2">
+                <i data-lucide="camera" class="w-4 h-4 text-cyan-400"></i>
+                Turnstile Face Verification Scanner
+              </h3>
+              <select id="gate-selector" class="bg-slate-900 border border-slate-700 text-xs rounded px-2.5 py-1 text-slate-300">
+                <option value="Gate 1 - Main Turnstile">Gate 1 - Main Turnstile</option>
+                <option value="Gate 2 - East Perimeter Gate">Gate 2 - East Perimeter Gate</option>
+              </select>
+            </div>
+
+            <!-- Scanner Display Frame -->
+            <div class="rounded-lg overflow-hidden bg-black border border-slate-800 min-h-[380px] flex items-center justify-center relative shadow-xl">
+              <img id="gate-result-img" src="" class="max-h-[380px] object-contain hidden">
+              <div id="gate-empty-placeholder" class="text-center text-slate-500 text-xs p-6">
+                <i data-lucide="scan-face" class="w-10 h-10 mx-auto mb-2 text-cyan-400/50"></i>
+                Ready to scan. Select an enrolled worker below or upload a photo to test biometric turnstile verification.
+              </div>
+            </div>
+
+            <!-- Verification Trigger Controls -->
+            <div class="bg-slate-900/90 p-4 rounded-lg border border-slate-800 space-y-3">
+              <div class="flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center gap-2 flex-1 min-w-[280px]">
+                  <span class="text-xs font-semibold text-slate-400 shrink-0">Test Enrolled Worker:</span>
+                  <select id="select-registered-worker" class="bg-slate-800 border border-slate-700 text-xs rounded px-3 py-1.5 text-slate-200 flex-1">
+                    <option value="">-- No registered workers yet --</option>
+                  </select>
+                  <button onclick="triggerGateVerification()" class="bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-xs px-4 py-1.5 rounded transition shrink-0">
+                    Verify Enrolled Face
+                  </button>
+                </div>
+
+                <!-- Upload Any Visitor / Test Face -->
+                <div class="flex items-center gap-2">
+                  <input type="file" id="gate-upload-input" accept="image/*" class="text-xs text-slate-400 file:mr-2 file:py-1 file:px-2.5 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-slate-700 file:text-white">
+                  <button onclick="verifyUploadedFace()" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs px-3 py-1.5 rounded transition shrink-0">
+                    Test Photo / Visitor
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Match Result Card -->
+            <div id="gate-match-card" class="p-4 rounded-lg border border-slate-800 bg-slate-900/60 text-xs space-y-1 hidden">
+              <div class="font-bold text-sm flex items-center gap-2" id="gate-match-title">
+                <span>Scanner Idle</span>
+              </div>
+              <div id="gate-match-details" class="text-slate-300">
+                Ready for biometric verification.
+              </div>
+            </div>
+          </div>
+
+          <!-- Active On-Site Attendance Roster -->
+          <div class="glass-panel p-5 space-y-4">
+            <h3 class="font-bold text-sm text-slate-200 flex items-center gap-2">
+              <i data-lucide="clipboard-check" class="w-4 h-4 text-emerald-400"></i>
+              Active On-Site Personnel Roster
+            </h3>
+            <p class="text-xs text-slate-400">Personnel currently logged inside the jobsite via turnstile biometric check-in.</p>
+            
+            <div id="active-roster-list" class="space-y-2.5 overflow-y-auto max-h-[460px]">
+              <!-- Dynamically populated via API -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Registered Workers Directory -->
+        <div class="glass-panel p-5 space-y-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="font-bold text-sm text-slate-200 flex items-center gap-2">
+                <i data-lucide="users" class="w-4 h-4 text-sky-400"></i>
+                Enrolled Personnel Directory
+              </h3>
+              <p class="text-xs text-slate-400">Workers registered in the SQLite biometric database with 512-d ArcFace facial embeddings.</p>
+            </div>
+            <span id="registered-workers-count" class="badge-pill badge-resolved font-mono font-bold">0 Registered</span>
+          </div>
+
+          <div id="registered-workers-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <!-- Dynamically populated via loadRegisteredWorkers() -->
+          </div>
+        </div>
+
+        <!-- Worker Enrollment Form -->
+        <div class="glass-panel p-5">
+          <h3 class="font-bold text-sm text-slate-200 mb-1 flex items-center gap-2">
+            <i data-lucide="user-plus" class="w-4 h-4 text-sky-400"></i>
+            Register New Worker & Generate 512-d Face Embedding
+          </h3>
+          <p class="text-xs text-slate-400 mb-4">Upload a worker portrait. InsightFace extracts the 512-dimensional facial vector and stores credentials in SQLite.</p>
+
+          <form id="enroll-form" onsubmit="submitWorkerEnrollment(event)" class="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs">
+            <div>
+              <label class="text-slate-400 block mb-1">Worker ID Code <span class="text-rose-400">*</span></label>
+              <input type="text" id="enroll-code" placeholder="e.g. WRK-001" required class="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 text-slate-200">
+            </div>
+            <div>
+              <label class="text-slate-400 block mb-1">Full Legal Name <span class="text-rose-400">*</span></label>
+              <input type="text" id="enroll-name" placeholder="e.g. Alexander Wright" required class="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 text-slate-200">
+            </div>
+            <div>
+              <label class="text-slate-400 block mb-1">Job Role / Department <span class="text-rose-400">*</span></label>
+              <input type="text" id="enroll-role" placeholder="e.g. Senior Steel Erector" required class="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 text-slate-200">
+            </div>
+            <div>
+              <label class="text-slate-400 block mb-1">OSHA Certification</label>
+              <select id="enroll-cert" class="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 text-slate-200">
+                <option value="OSHA 10 (Construction)">OSHA 10 (Construction)</option>
+                <option value="OSHA 30 (Supervisory)">OSHA 30 (Supervisory)</option>
+                <option value="Basic Site Induction">Basic Site Induction</option>
+                <option value="NFPA 70E Electrical Safety">NFPA 70E Electrical Safety</option>
+                <option value="Subpart P Competent Person">Subpart P Competent Person</option>
+              </select>
+            </div>
+            <div class="md:col-span-2">
+              <label class="text-slate-400 block mb-1">Authorized Zones</label>
+              <input type="text" id="enroll-zones" value="Main Perimeter, Sector A, Pit A" required class="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 text-slate-200">
+            </div>
+            <div class="md:col-span-2">
+              <label class="text-slate-400 block mb-1">Worker Facial Photo (ArcFace Biometric Source) <span class="text-rose-400">*</span></label>
+              <input type="file" id="enroll-photo" accept="image/*" required class="w-full text-slate-400 file:mr-2 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-sky-600 file:text-white">
+            </div>
+            <div class="md:col-span-4 flex justify-end">
+              <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-6 py-2.5 rounded text-xs transition flex items-center gap-2">
+                <i data-lucide="user-check" class="w-4 h-4"></i>
+                Register Worker & Compute 512-d ArcFace Biometric
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- VIEW 4: IOT ENVIRONMENTAL SENSORS -->
+      <section id="view-iot" class="space-y-6 hidden">
+        <div class="flex items-center justify-between bg-surface-card border border-slate-800 rounded-xl p-4">
+          <div class="flex items-center gap-4">
+            <button onclick="switchView('overview')" class="flex items-center gap-1.5 text-xs text-sky-400 hover:text-sky-300 font-semibold transition bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/30 px-3 py-1.5 rounded-lg shrink-0">
+              <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Back
+            </button>
+            <div>
+              <h2 class="text-xl font-black text-slate-100">Simulated IoT Environmental Gateway</h2>
+              <p class="text-xs text-slate-400">Atmospheric toxic gas monitoring, airborne particulate dust, acoustic exposure & thermal stress.</p>
+            </div>
+          </div>
+          <span class="badge-pill badge-medium">SIMULATED (DEMO)</span>
+        </div>
+
+        <!-- Scenario Presets -->
+        <div class="glass-panel p-4">
+          <div class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Simulate Operational Scenarios</div>
+          <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+            <button onclick="applyIoTPreset('Normal Conditions')" class="px-3 py-2 rounded bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-semibold text-slate-200 transition">
+              Normal Baseline
+            </button>
+            <button onclick="applyIoTPreset('High-Temperature (Heat Stress)')" class="px-3 py-2 rounded bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-semibold text-orange-400 transition">
+              Heat Stress (41°C)
+            </button>
+            <button onclick="applyIoTPreset('High-Dust (Demolition / Cutting)')" class="px-3 py-2 rounded bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-semibold text-yellow-400 transition">
+              Heavy Dust (178 µg/m³)
+            </button>
+            <button onclick="applyIoTPreset('Gas Warning (Confined Space / Trench)')" class="px-3 py-2 rounded bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-semibold text-rose-400 transition">
+              Gas Leak (58 ppm)
+            </button>
+            <button onclick="applyIoTPreset('High-Noise (Piling / Heavy Drilling)')" class="px-3 py-2 rounded bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-semibold text-sky-400 transition">
+              Noise Hazard (99 dBA)
+            </button>
+          </div>
+        </div>
+
+        <!-- 5 Sensor Telemetry Dials -->
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+          <div class="kpi-tile text-center">
+            <div class="text-xs font-bold uppercase text-slate-400">Temperature</div>
+            <div id="iot-temp" class="text-3xl font-extrabold mono text-orange-400 mt-2">-- °C</div>
+            <div class="text-[11px] text-slate-500 mt-1">Alert Threshold: 40°C</div>
+          </div>
+          <div class="kpi-tile text-center">
+            <div class="text-xs font-bold uppercase text-slate-400">Rel. Humidity</div>
+            <div id="iot-humid" class="text-3xl font-extrabold mono text-sky-400 mt-2">-- %</div>
+            <div class="text-[11px] text-slate-500 mt-1">Ambient RH</div>
+          </div>
+          <div class="kpi-tile text-center">
+            <div class="text-xs font-bold uppercase text-slate-400">Dust (PM2.5)</div>
+            <div id="iot-dust" class="text-3xl font-extrabold mono text-yellow-400 mt-2">-- µg/m³</div>
+            <div class="text-[11px] text-slate-500 mt-1">Action Level: 150 µg/m³</div>
+          </div>
+          <div class="kpi-tile text-center">
+            <div class="text-xs font-bold uppercase text-slate-400">Gas (CO / VOC)</div>
+            <div id="iot-gas" class="text-3xl font-extrabold mono text-rose-500 mt-2">-- ppm</div>
+            <div class="text-[11px] text-slate-500 mt-1">Toxic Limit: 50 ppm</div>
+          </div>
+          <div class="kpi-tile text-center">
+            <div class="text-xs font-bold uppercase text-slate-400">Acoustic Noise</div>
+            <div id="iot-noise" class="text-3xl font-extrabold mono text-sky-400 mt-2">-- dBA</div>
+            <div class="text-[11px] text-slate-500 mt-1">Action Level: 85 dBA</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 5: SAFETY INCIDENTS & AUDIT -->
+      <section id="view-incidents" class="space-y-6 hidden">
+        <div class="flex items-center justify-between bg-surface-card border border-slate-800 rounded-xl p-4">
+          <div class="flex items-center gap-4">
+            <button onclick="switchView('overview')" class="flex items-center gap-1.5 text-xs text-sky-400 hover:text-sky-300 font-semibold transition bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/30 px-3 py-1.5 rounded-lg shrink-0">
+              <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Back
+            </button>
+            <div>
+              <h2 class="text-xl font-black text-slate-100">Safety Incident Lifecycle & Audit Log</h2>
+              <p class="text-xs text-slate-400">EHS Incident verification, photographic snapshot review, and CSV audit compliance export.</p>
+            </div>
+          </div>
+          <a href="/api/v1/incidents/export/csv" class="px-4 py-2 rounded-lg bg-sky-600 hover:bg-sky-500 text-xs font-bold text-white flex items-center gap-1.5 transition">
+            <i data-lucide="download" class="w-3.5 h-3.5"></i> Export Official CSV Audit Report
+          </a>
+        </div>
+
+        <!-- Incidents Table -->
+        <div class="glass-panel p-5">
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-3">
+              <select id="filter-incident-status" onchange="loadIncidentsTable()" class="bg-slate-900 border border-slate-700 text-xs rounded px-3 py-1.5 text-slate-200">
+                <option value="">All Statuses</option>
+                <option value="Open">Open</option>
+                <option value="Acknowledged">Acknowledged</option>
+                <option value="Resolved">Resolved</option>
+              </select>
+              <select id="filter-incident-priority" onchange="loadIncidentsTable()" class="bg-slate-900 border border-slate-700 text-xs rounded px-3 py-1.5 text-slate-200">
+                <option value="">All Priorities</option>
+                <option value="Critical">Critical</option>
+                <option value="High">High</option>
+                <option value="Medium">Medium</option>
+              </select>
+            </div>
+            <input type="text" id="incident-search" oninput="loadIncidentsTable()" placeholder="Search incidents..." class="bg-slate-900 border border-slate-700 text-xs rounded px-3 py-1.5 text-slate-200 w-64">
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs text-slate-300">
+              <thead class="text-slate-400 bg-slate-900 border-b border-slate-800 uppercase tracking-wider">
+                <tr>
+                  <th class="py-2.5 px-4 font-semibold">Event ID</th>
+                  <th class="py-2.5 px-4 font-semibold">Time</th>
+                  <th class="py-2.5 px-4 font-semibold">Hazard Category</th>
+                  <th class="py-2.5 px-4 font-semibold">Priority</th>
+                  <th class="py-2.5 px-4 font-semibold">Zone</th>
+                  <th class="py-2.5 px-4 font-semibold">Status</th>
+                  <th class="py-2.5 px-4 font-semibold text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="incidents-table-body" class="divide-y divide-slate-800">
+                <!-- Dynamically loaded -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 6: OSHA REGULATIONS & ROADMAP -->
+      <section id="view-regulations" class="space-y-6 hidden">
+        <div class="bg-surface-card border border-slate-800 rounded-xl p-5 flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <button onclick="switchView('overview')" class="flex items-center gap-1.5 text-xs text-sky-400 hover:text-sky-300 font-semibold transition bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/30 px-3 py-1.5 rounded-lg shrink-0">
+              <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Back
+            </button>
+            <div>
+              <h2 class="text-xl font-black text-slate-100">OSHA 29 CFR 1926 Safety Reference Library</h2>
+              <p class="text-xs text-slate-400 mt-0.5">Official verified construction standards, required protective equipment, and recommended corrective action protocols.</p>
+            </div>
+          </div>
+        </div>
+
+        <div id="regulations-container" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Dynamically populated from API -->
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- TOAST ALERTS NOTIFICATIONS CONTAINER -->
+  <div id="toast-container" class="fixed top-16 right-5 z-50 flex flex-col gap-2.5 pointer-events-none max-w-sm w-full"></div>
+
+  <!-- Scripts -->
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

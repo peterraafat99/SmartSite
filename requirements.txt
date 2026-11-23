@@ -1,0 +1,27 @@
+# SmartSite — Enterprise AI Construction Safety Platform Dependencies
+# Compatible with Python 3.10 - 3.12 on Windows (CPU & CUDA supported)
+
+# Web & API Framework
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.0
+websockets>=12.0
+python-multipart>=0.0.9
+aiofiles>=24.0.0
+pydantic>=2.7.0
+
+# Computer Vision & Deep Learning (PPE & Zone Detection)
+ultralytics>=8.3.0
+torch>=2.0.0
+torchvision>=0.15.0
+opencv-python>=4.8.0
+numpy>=1.24.0
+Pillow>=10.0.0
+
+# Biometric Facial Recognition (Seba Engine Access Control)
+insightface>=0.7.3
+onnxruntime>=1.17.0
+
+# Data Processing & Utilities
+pandas>=2.0.0
+PyYAML>=6.0
+requests>=2.31.0

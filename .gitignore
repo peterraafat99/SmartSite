@@ -1,0 +1,47 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Large datasets & weights (Do not track in git — download separately)
+data/datasets/
+*.zip
+*.tar.gz
+runs/
+*.mp4
+*.avi
+
+# YOLO model weights (large binary files)
+yolo11n.pt
+yolov8n.pt
+models/best.pt
+
+# SQLite Database local state
+data/*.db
+data/*.db-journal
+
+# Face photos and evidence (privacy)
+data/evidence/
+data/faces/
+
+# InsightFace cached models
+.insightface/
+
+# IDE / OS files
+.vscode/
+.idea/
+*.swp
+Thumbs.db
+.DS_Store
+
+# Legacy code
+legacy_streamlit/
+
+# Tests / scratch
+tests/
+*.log
